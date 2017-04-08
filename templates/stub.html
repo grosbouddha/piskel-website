@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+
+{% block main %}
+  <style>
+    #stub-page {
+    	margin-left: 40px;
+    }
+
+    #stub-page ul {
+    	list-style-type: disc;
+    padding-left: 20px;
+    margin: 20px;
+    }
+  </style>
+  <div id="stub-page">
+    {% for user_config in user_configs %}
+    <p>
+      <div>User name: {{user_config.user_name}}</div>
+      <div>User id: {{user_config.user_id}}</div>
+      <div><a href="/user/{{user_config.user_id}}">Link to Gallery</a></div>
+      <ul>
+      	<li>Adding {{user_config.public_piskel_count}} public piskels
+        <li>Adding {{user_config.private_piskel_count}} private piskels
+        <li>Adding {{user_config.deleted_piskel_count}} deleted piskels
+      </ul>
+    </p>
+    <hr/>
+    {% endfor %}
+
+    <p>
+    	To remove these stubs entries, restart your server with:
+    	<code>/project_root/dev_appserver.py app.yaml --clear_datastore'</code>
+    </p>
+  </div>
+{% endblock %}

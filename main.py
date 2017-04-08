@@ -81,7 +81,11 @@ routes = [
   # ############# #
   Route('/img/<image_name>', handler='handlers.image.GetImageHandler', name='image-get'),
   Route('/img/<framesheet_id>/preview', handler='handlers.image.GetImageHandler:get_framesheet_preview', name='image-get-preview'),
-  Route('/img/<framesheet_id>/framesheet', handler='handlers.image.GetImageHandler:get_framesheet', name='image-get-framesheet')
+  Route('/img/<framesheet_id>/framesheet', handler='handlers.image.GetImageHandler:get_framesheet', name='image-get-framesheet'),
+  # ############# #
+  # STUB ROUTES   #
+  # ############# #
+  Route('/stub', handler='handlers.stub.StubHandler:create', name='stub')
 ]
 
 app = WSGIApplication(routes, config=config, debug=True)
