@@ -3,7 +3,6 @@ from models import Framesheet, Piskel
 from google.appengine.ext import db
 from handlers import image as image_handler
 from types import *
-import logging
 
 import random
 import os
@@ -28,16 +27,16 @@ class StubHandler(BaseHandler):
     }
   ]
 
-  # Creates a bunch of piskels for the logged-in user.
-  # Creates a bunch of fake users with fake piskels
-  #
-  # To clear this fake data:
-  # <project_root>/dev_appserver.py app.yaml --clear_datastore 
-  #
-  # This entry point only works on localhost.
+  '''
+    Creates a bunch of piskels for the logged-in user based on {@code _get_logged_in_user_config}.
+    Creates a bunch of fake users with fake piskels based on {@code fake_user_configs}.
+
+    To clear all data from your dev server:
+    <project_root>/dev_appserver.py app.yaml --clear_datastore 
+
+    This entry point works on localhost only.
+  '''
   def create(self):
-    logging.info(dir(self.auth.store.user_model))
-    
     if not self._isLocal():
       return
 
@@ -61,7 +60,7 @@ class StubHandler(BaseHandler):
     if logged_in_user_config:
         all_user_configs = [logged_in_user_config] + all_user_configs
 
-    # Generate fake piskels fir each user.
+    # Generate fake piskels for each user.
     for user_config in all_user_configs:
         self._assert_config(user_config)
         self._create_fake_piskels_for_user(user_config)
@@ -85,36 +84,30 @@ class StubHandler(BaseHandler):
     }
 
   def _create_fake_piskels_for_user(self, user_conf):
+    self._generate_piskels(user_conf['private_piskel_count'], True, False, user_conf)
+    self._generate_piskels(user_conf['public_piskel_count'], False, False, user_conf)
+    self._generate_piskels(user_conf['deleted_piskel_count'], False, True, user_conf)
+
+  def _generate_piskels(self, count, private, deleted, user_conf):
     user_id = user_conf['user_id']
-
-    for idx, _ in enumerate(xrange(user_conf['private_piskel_count'])):
-      ui_id = str(idx) + '_' + user_conf['user_name']
-      self._create_piskel(user_id, ui_id, True, False)
-
-    for idx, _ in enumerate(xrange(user_conf['public_piskel_count'])):
-      ui_id = str(idx) + '_' + user_conf['user_name']
-      self._create_piskel(user_id, ui_id, False, False)
-
-    for idx, _ in enumerate(xrange(user_conf['deleted_piskel_count'])):
-      ui_id = str(idx) + '_' + user_conf['user_name']
-      self._create_piskel(user_id, ui_id, False, True)
+    for idx, _ in enumerate(xrange(count)):
+      name_suffix = str(idx) + '_' + user_conf['user_name']
+      self._create_piskel(user_id, name_suffix, private, deleted)
 
 
   def _assert_config(self, config):
-    logging.info(config)
     assert type(config['user_id']) is LongType, "invalid user_id: %r" % config['user_id']
     assert type(config['user_name']) is StringType, "invalid user_name: %r" % config['user_name']
     assert type(config['public_piskel_count']) is IntType
     assert type(config['private_piskel_count']) is IntType
     assert type(config['deleted_piskel_count']) is IntType
 
-  def _create_piskel(self, user_id, ui_id, is_private, is_deleted):
-    #logging.info('Adding fake piskel')
+  def _create_piskel(self, user_id, name_suffix, is_private, is_deleted):
     piskel = Piskel(owner=user_id)
     piskel.garbage = False
     piskel.deleted = is_deleted
-    piskel.name = ui_id + ' name'
-    piskel.description = 'desc ' + ui_id
+    piskel.name = name_suffix + ' name'
+    piskel.description = name_suffix + 'desc '
     piskel.private = is_private
 
     piskel.put()
